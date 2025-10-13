@@ -1,3 +1,1 @@
-timestamp,price_pln,status,note
-2025-10-13 10:08:58,184.00,BELOW,Email error: SMTP credentials missing. Set SMTP_USER and SMTP_PASS as repo secrets.
-2025-10-13 10:16:28,184.00,BELOW,Alert sent
+
