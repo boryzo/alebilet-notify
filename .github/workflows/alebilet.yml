@@ -34,7 +34,7 @@ jobs:
           SMTP_PORT: "587"
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          FROM_ADDR: ${{ secrets.FROM_ADDR }}
+          FROM_ADDR: ${{ secrets.SMTP_USER }}
           STATE_PATH: ".alebilet_state.json"
           LOG_PATH: "logs/alebilet_log.csv"
         run: |
