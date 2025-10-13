@@ -1,0 +1,61 @@
+name: AleBilet Watch
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # co 15 minut
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # potrzebne do commita logów/stanu
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run watcher
+        env:
+          URL: https://www.alebilet.pl/bilety/coma/2025-10-17/20:00/re-start-gra-o-wszystko
+          THRESHOLD_PLN: "230.0"
+          EMAIL_TO: "boryzo@gmail.com"
+          SMTP_HOST: "smtp.gmail.com"
+          SMTP_PORT: "587"
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          FROM_ADDR: ${{ secrets.FROM_ADDR }}
+          STATE_PATH: ".alebilet_state.json"
+          LOG_PATH: "logs/alebilet_log.csv"
+        run: |
+          python watch_alebilet.py
+
+      - name: Commit log/state if changed
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add logs/alebilet_log.csv .alebilet_state.json || true
+          if ! git diff --cached --quiet; then
+            git commit -m "alebilet: update logs [skip ci]"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Upload logs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alebilet-logs
+          path: logs/alebilet_log.csv
+          if-no-files-found: warn
